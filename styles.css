@@ -1280,12 +1280,28 @@ html, body {
 
   .modal-overlay {
     padding: 0.75rem;
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal-content {
-    padding: 1.25rem 1rem;
-    max-height: 90dvh;
+    padding: 1.25rem 1rem 2rem;
+    max-height: none;
+    overflow-y: visible;
+    margin: auto 0;
     border-radius: var(--radius-md);
+  }
+
+  .btn-restart-header#btn-tips span {
+    display: inline;
+  }
+
+  .tips-section,
+  .tips-example,
+  .didactic-hint-box {
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .login-field input {
