@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimulaMax PCMA - 500 Questões Embaralhadas por Níveis</title>
+  <meta name="description" content="Simulado gamificado com 500 questões totalmente embaralhadas divididas em 10 Níveis graduais de 50 questões, progresso por Level Up, maior nota e troféus." />
+  <link rel="stylesheet" href="styles.css?v=20261123f" />
+</head>
+<body>
+
+  <!-- Ambient Blurs -->
+  <div class="ambient-blur blur-top"></div>
+  <div class="ambient-blur blur-bottom"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-badge">⚖️</div>
+        <div class="logo-title">
+          <h1>SimulaMax PCMA</h1>
+          <span>500 Questões Reais Embaralhadas • 10 Níveis</span>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-item" title="Nível Atual de Progresso (1 a 10)">
+          <span class="stat-icon">🎖️</span>
+          <span class="stat-val" id="level-display">Nível 1</span>
+        </div>
+        <div class="stat-item" title="Sua pontuação de experiência acumulada">
+          <span class="stat-icon">⚡</span>
+          <span class="stat-val" id="xp-display">0</span> <span style="font-size:0.75rem; color:var(--text-muted)">XP</span>
+        </div>
+        <div class="stat-item" title="Sequência de acertos seguidos">
+          <span class="stat-icon">🔥</span>
+          <span class="streak-val" id="streak-display">0</span>
+        </div>
+        <div class="stat-item high-score-item" title="Sua Maior Nota / Recorde Histórico">
+          <span class="stat-icon">🥇</span>
+          <span class="stat-val high-score-val" id="high-score-display">0%</span>
+        </div>
+
+        <div class="stat-item timer-item" id="timer-widget" title="Cronômetro do Simulado">
+          <span class="stat-icon">⏱️</span>
+          <span class="stat-val" id="timer-display">00:00</span>
+          <button id="btn-timer-toggle" class="btn-timer-mini" title="Pausar / Continuar cronômetro">⏸️</button>
+          <button id="btn-timer-reset" class="btn-timer-mini" title="Zerar cronômetro">↺</button>
+        </div>
+        
+        <button id="btn-restart-header" class="btn-restart-header" title="Embaralhar todas as 500 Questões e Reiniciar do Nível 1">
+          🔄 <span>Embaralhar Tudo</span>
+        </button>
+
+        <button id="btn-tips" class="btn-restart-header" style="background: rgba(251, 191, 36, 0.14); border-color: rgba(251, 191, 36, 0.45); color: var(--accent-gold);" title="Método Didático: Palavras-Chave & Exemplos">
+          💡 <span>Método & Dicas</span>
+        </button>
+
+        <button id="btn-trophies" class="btn-icon" title="Ver Gabinete de Troféus">
+          🏆 <span id="trophy-count" style="font-size:0.7rem; margin-left:2px; font-weight:800;">0/7</span>
+        </button>
+
+        <button id="btn-sound" class="btn-icon" title="Ligar/Desligar Efeitos Sonoros">
+          <span id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Subject & Category Bar -->
+    <div class="category-bar" id="category-bar">
+      <!-- Categories dynamically rendered by app.js -->
+    </div>
+
+    <!-- 10 Levels Progression Bar -->
+    <div class="pagination-bar" id="pagination-bar">
+      <div class="page-info">
+        <span>🎖️ NÍVEIS DE PROGRESSO (50 QUESTÕES EMBARALHADAS POR NÍVEL):</span>
+      </div>
+      <div class="page-pills-container" id="level-pills-container">
+        <!-- Rendered by app.js: Nível 1 (Q1-50), Nível 2 🔒, ... Nível 10 🔒 -->
+      </div>
+    </div>
+
+    <!-- Level Progress Status Bar -->
+    <div class="level-progress-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+        <span style="font-size:0.85rem; font-weight:700; color:var(--accent-cyan);" id="level-progress-title">
+          Progresso no Nível 1: 0 de 50 respondidas
+        </span>
+        <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);" id="level-progress-pct">
+          0%
+        </span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="level-progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Floating Question Card Section -->
+    <section class="quiz-section" style="margin-top: 1rem;">
+      <div class="floating-card hover-float" id="floating-card">
+        <div class="card-header">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="subject-badge" id="subject-badge">Carregando...</span>
+            <span class="diff-badge" id="diff-badge">Média</span>
+          </div>
+          <div class="q-number" id="q-number">Questão 1 de 50 no Nível 1 (Nº 1 de 500)</div>
+        </div>
+
+        <div class="question-text" id="question-text">
+          Carregando enunciado da questão...
+        </div>
+
+        <!-- Options List -->
+        <div class="options-list" id="options-list">
+          <!-- Options rendered by app.js -->
+        </div>
+
+        <!-- Didactic Keyword Hint (On-Demand) -->
+        <div class="didactic-hint-box" id="didactic-hint-box" style="display: none;"></div>
+
+        <!-- Gabarito Comentado (Instant Feedback) -->
+        <div class="commentary-box" id="commentary-box" style="display: none;">
+          <div class="commentary-header">
+            <span>💡</span> Gabarito Comentado
+          </div>
+          <div class="commentary-text" id="commentary-text">
+            Explicação detalhada da questão aparecerá aqui após selecionar a resposta.
+          </div>
+        </div>
+
+        <!-- Card Actions & Navigation -->
+        <div class="card-actions">
+          <button id="btn-prev" class="btn-secondary" disabled>
+            ← Anterior
+          </button>
+
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <button id="btn-question-hint" class="btn-secondary" style="border-color: rgba(251, 191, 36, 0.4); color: var(--accent-gold);" title="Analisar palavras-chave desta questão">
+              💡 Dica na Questão
+            </button>
+
+            <button id="btn-restart-card" class="btn-secondary" title="Embaralhar 500 Questões">
+              🎲 Embaralhar Tudo
+            </button>
+
+            <button id="btn-next" class="btn-primary">
+              Próxima Questão →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Question Map / Navigator Grid (50 Questions of the Current Level) -->
+      <div style="margin-top: 1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text-muted);" id="grid-title">
+            MAPA DAS 50 QUESTÕES DO NÍVEL ATUAL:
+          </div>
+          <div style="display:flex; gap:0.75rem;">
+            <button id="btn-view-results" class="btn-text-link" style="color:var(--accent-gold);">
+              📊 Ver Resultado Geral & Maior Nota
+            </button>
+            <button id="btn-restart-footer" class="btn-text-link" title="Embaralhar Questões">
+              🔄 Embaralhar 500 Questões
+            </button>
+          </div>
+        </div>
+        <div class="nav-grid" id="nav-grid">
+          <!-- Quick nav pills for the 50 questions of the current level rendered by app.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Didactic Keyword Guide Modal -->
+  <div class="modal-overlay" id="tips-modal">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: var(--accent-gold);">
+          <span>💡</span> Método Didático: Palavras-Chave & Exemplos
+        </div>
+        <button class="close-modal" id="close-tips-modal">&times;</button>
+      </div>
+
+      <div class="tips-body">
+        <div id="tips-current-question" class="tips-section" style="border-color: var(--accent-cyan); background: rgba(56, 189, 248, 0.08);">
+          <!-- Preenchido dinamicamente pelo app.js com a questão atual na tela e seu comentário -->
+        </div>
+
+        <div class="tips-section tips-logic">
+          <h3>🎯 1. Gatilhos de Lógica (Troca Mecânica de Palavras)</h3>
+          <ul>
+            <li><strong>Negação de <code>Existe / Algum / Pelo menos um ... não</code>:</strong> troque por <span class="tips-tag-good">Todos</span> e <strong>remova o "não"</strong>.</li>
+            <li><strong>Negação de <code>Nenhum A é B</code>:</strong> procure <span class="tips-tag-good">Pelo menos um</span> ou <span class="tips-tag-good">Existe</span> (sem "não").</li>
+            <li><strong>Negação de <code>Todo A é B</code>:</strong> procure <span class="tips-tag-good">Existe / Algum ... não</span> (nunca marque "Nenhum").</li>
+            <li><strong>Equivalência de <code>Se P, então Q</code>:</strong> troque por <span class="tips-tag-good">não P ou Q</span> (sai o "Se... então" e entra o <strong>"ou"</strong>).</li>
+            <li><strong>Conjunções (Português):</strong> <code>conquanto / posto que</code> = <strong>embora (Concessão)</strong>; <code>porquanto</code> = <strong>porque (Causa)</strong>; <code>contanto que</code> = <strong>se (Condição)</strong>.</li>
+          </ul>
+          <div class="tips-example">
+            <strong>📌 Exemplo Real (Questão 122):</strong><br/>
+            <em>"Considere a afirmação: <strong>'Existe</strong> um suspeito que <strong>não</strong> foi localizado'. A <strong>negação</strong> correta é:"</em><br/>
+            → Passo 1: Troque <strong>Existe</strong> por <strong>Todos</strong> (sobram A e E).<br/>
+            → Passo 2: Tire o <strong>não</strong> (elimina E: <em>"Todos não foram"</em>).<br/>
+            → Resultado imediato: <strong>A) Todos os suspeitos foram localizados.</strong><br/>
+            <span style="display:block; margin-top:0.45rem; color:var(--accent-cyan);"><strong>💡 Comentário Oficial:</strong> A negação da proposição existencial negativa "Existe um que não é" é realizada afirmando categoricamente que todos os elementos cumprem a propriedade sem exceções, ou seja, transformando-a em uma universal afirmativa: "Todos os suspeitos foram localizados".</span>
+          </div>
+        </div>
+
+        <div class="tips-section tips-good">
+          <h3>✅ 2. Sinais de Alternativa Certa (Muito acima dos 20% ao acaso)</h3>
+          <ul>
+            <li><strong>Contém parênteses <code>(...)</code>:</strong> <span class="tips-tag-good">47,1% de acerto</span> — quando traz sigla, artigo ou exemplo entre parênteses, quase metade das vezes é o gabarito.</li>
+            <li><strong>Alternativa mais longa:</strong> <span class="tips-tag-good">38,9% de acerto</span> — a resposta correta costuma detalhar a exceção ou a regra completa.</li>
+            <li><strong>Eco do enunciado:</strong> <span class="tips-tag-good">36,5% de acerto</span> — repete palavras-chave centrais da pergunta.</li>
+            <li><strong>Conectores explicativos:</strong> <code>sendo</code> (66,7%), <code>como</code> (54,5%), <code>entre</code> (53,8%), <code>apresentam</code> (70,0%).</li>
+          </ul>
+          <div class="tips-example">
+            <strong>📌 Exemplo Didático:</strong><br/>
+            Entre <em>"A) Descentralização."</em> e <em>"B) Desconcentração, caracterizada pela distribuição interna de competências dentro da mesma pessoa jurídica do Estado."</em> → a explicação completa + conectivo aponta para a <strong>B</strong>.
+          </div>
+        </div>
+
+        <div class="tips-section tips-bad">
+          <h3>🚫 3. Palavras "Imãs de Erro" (Corte Imediato: 91% a 100% Erradas)</h3>
+          <ul>
+            <li><span class="tips-tag-bad">bits / bits decimais / bits fiscais</span> — <strong>99,2% a 100% de erro</strong> (117 erradas em 118!).</li>
+            <li><span class="tips-tag-bad">estocástica</span> (100% erro), <span class="tips-tag-bad">menor potencial ofensivo</span> (100% erro).</li>
+            <li><span class="tips-tag-bad">investigadores / policiais civis / pelo delegado</span> — <strong>91,7% a 100% de erro</strong> (iscas com nomes da carreira policial).</li>
+            <li><span class="tips-tag-bad">exclusiva / perante / fiança / operacional</span> — <strong>90,9% a 93,3% de erro</strong>.</li>
+          </ul>
+          <div class="tips-example">
+            <strong>📌 Exemplo Real:</strong><br/>
+            Se numa questão de Direito ou Contabilidade aparecer <em>"...baseados em <strong>bits decimais</strong>"</em> ou <em>"...em <strong>bits fiscais</strong>"</em>, risque sem medo: é distrator padrão!
+          </div>
+        </div>
+
+        <div class="tips-section">
+          <h3>📊 4. Critério de Desempate Estatístico da Banca</h3>
+          <ul>
+            <li>Se eliminou os absurdos e ficou em dúvida real entre duas opções, lembre-se da distribuição observada nas 469 questões comentadas: <strong>B (57,6%)</strong> e <strong>C (22,6%)</strong> concentram <strong>80,2% dos gabaritos</strong> (A = 12,2%, D = 6,0%, E = 1,7%).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trophy Cabinet Modal -->
+  <div class="modal-overlay" id="trophy-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🏆</span> Gabinete de Troféus & Conquistas
+        </div>
+        <button class="close-modal" id="close-trophy-modal">&times;</button>
+      </div>
+      <div class="trophy-grid" id="trophy-grid">
+        <!-- Rendered by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL UP Celebration Modal -->
+  <div class="modal-overlay" id="levelup-modal">
+    <div class="modal-content" style="max-width: 550px; text-align: center; border-color: var(--accent-gold);">
+      <div class="modal-header">
+        <div class="modal-title" style="margin:0 auto; color: var(--accent-gold);">
+          <span>🎉</span> LEVEL UP! NÍVEL CONCLUÍDO!
+        </div>
+      </div>
+
+      <div style="padding: 1.5rem 0;">
+        <div style="font-size: 4rem; margin-bottom: 0.5rem;" id="levelup-icon">🎖️</div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;" id="levelup-title">
+          Nível 1 Superado!
+        </h2>
+        <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="levelup-desc">
+          Você respondeu às 50 questões do nível e desbloqueou o próximo nível de desafios!
+        </p>
+
+        <div class="high-score-box" style="margin-bottom: 1.5rem;">
+          <div class="hs-label">Desempenho no Nível:</div>
+          <div class="hs-value" id="levelup-score-val">0 / 50 (0%)</div>
+        </div>
+
+        <button id="btn-next-level" class="btn-primary" style="margin: 0 auto; padding: 0.9rem 2rem; font-size: 1rem;">
+          🚀 Avançar para o Próximo Nível →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Results & High Score Modal -->
+  <div class="modal-overlay" id="results-modal">
+    <div class="modal-content" style="max-width: 650px; text-align: center;">
+      <div class="modal-header">
+        <div class="modal-title" style="margin:0 auto;">
+          <span>📊</span> Relatório de Desempenho PCMA (500 Questões)
+        </div>
+        <button class="close-modal" id="close-results-modal">&times;</button>
+      </div>
+
+      <div class="results-body">
+        <div class="score-circle-container">
+          <div class="score-percentage" id="final-score-pct">0%</div>
+          <div class="score-label" id="final-score-ratio">0 de 500 acertos</div>
+        </div>
+
+        <div id="new-record-banner" class="new-record-banner" style="display: none;">
+          🎉 NOVO RECORDE PESSOAL CONQUISTADO! 🎉
+        </div>
+
+        <div class="high-score-box">
+          <div class="hs-label">Sua Maior Nota Registrada:</div>
+          <div class="hs-value" id="final-high-score-val">0%</div>
+        </div>
+
+        <div class="breakdown-list" id="breakdown-list">
+          <!-- Subject breakdown rendered by app.js -->
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+          <button id="btn-restart-modal" class="btn-primary" style="padding: 0.85rem 1.75rem;">
+            🔄 Embaralhar 500 Questões
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-notification" id="toast-notification">
+    <div class="toast-icon" id="toast-icon">🏆</div>
+    <div>
+      <div class="toast-title" id="toast-title">Troféu Desbloqueado!</div>
+      <div class="toast-desc" id="toast-desc">Descrição do troféu...</div>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas overlay -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <script src="questions.js?v=20261123c"></script>
+  <script src="audio.js"></script>
+  <script src="app.js?v=20261123g"></script>
+</body>
+</html>
