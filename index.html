@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SimulaMax PCMA - 500 Questões Embaralhadas por Níveis</title>
   <meta name="description" content="Simulado gamificado com 500 questões totalmente embaralhadas divididas em 10 Níveis graduais de 50 questões, progresso por Level Up, maior nota e troféus." />
-  <link rel="stylesheet" href="styles.css?v=20261123f" />
+  <link rel="stylesheet" href="styles.css?v=20261125" />
 </head>
 <body>
 
@@ -59,6 +59,10 @@
 
         <button id="btn-trophies" class="btn-icon" title="Ver Gabinete de Troféus">
           🏆 <span id="trophy-count" style="font-size:0.7rem; margin-left:2px; font-weight:800;">0/7</span>
+        </button>
+
+        <button id="btn-user-account" class="user-pill" title="Conta logada (clique para trocar de e-mail ou sair)">
+          👤 <span id="user-email-label">Entrar</span>
         </button>
 
         <button id="btn-sound" class="btn-icon" title="Ligar/Desligar Efeitos Sonoros">
@@ -176,6 +180,41 @@
       </div>
     </section>
   </main>
+
+  <!-- Email Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-content" style="max-width: 460px; text-align: center;">
+      <div class="modal-header">
+        <div class="modal-title" style="margin:0 auto; color: var(--accent-cyan);">
+          <span>📧</span> Entrar com E-mail
+        </div>
+        <button class="close-modal" id="close-login-modal" style="display:none;">&times;</button>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.4rem;">
+        Informe seu e-mail para salvar seu progresso, maior nota, troféus e tempo separadamente no navegador.
+      </p>
+
+      <form id="login-form" class="login-form" novalidate>
+        <div class="login-field">
+          <label for="login-name">Seu Nome (opcional)</label>
+          <input type="text" id="login-name" placeholder="Ex.: Júnior Loiola" />
+        </div>
+        <div class="login-field">
+          <label for="login-email">Seu E-mail *</label>
+          <input type="email" id="login-email" placeholder="seuemail@exemplo.com" required />
+        </div>
+        <div class="login-error" id="login-error">Digite um endereço de e-mail válido.</div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem;">
+          🚀 Acessar Simulado
+        </button>
+        <button type="button" id="btn-logout" class="btn-secondary" style="width: 100%; justify-content: center; display: none; color: #f87171; border-color: rgba(239, 68, 68, 0.35);">
+          🚪 Sair desta conta
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Didactic Keyword Guide Modal -->
   <div class="modal-overlay" id="tips-modal">
@@ -346,6 +385,6 @@
 
   <script src="questions.js?v=20261123c"></script>
   <script src="audio.js"></script>
-  <script src="app.js?v=20261123g"></script>
+  <script src="app.js?v=20261125"></script>
 </body>
 </html>

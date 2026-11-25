@@ -18,7 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
     maxStreak: 0,
     highScorePct: 0, // Maior Nota (%)
     elapsedSeconds: 0,
-    timerRunning: true,
+    timerRunning: false,
+    userEmail: "",
+    userName: "",
     subjectCorrect: {},
     unlockedTrophies: new Set()
   };
@@ -54,6 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
     btnViewResults: document.getElementById("btn-view-results"),
     btnTips: document.getElementById("btn-tips"),
     btnQuestionHint: document.getElementById("btn-question-hint"),
+    btnUserAccount: document.getElementById("btn-user-account"),
+    userEmailLabel: document.getElementById("user-email-label"),
+    loginModal: document.getElementById("login-modal"),
+    closeLoginModal: document.getElementById("close-login-modal"),
+    loginForm: document.getElementById("login-form"),
+    loginName: document.getElementById("login-name"),
+    loginEmail: document.getElementById("login-email"),
+    loginError: document.getElementById("login-error"),
+    btnLogout: document.getElementById("btn-logout"),
     gridTitle: document.getElementById("grid-title"),
 
     // Quiz Card
@@ -117,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize Data & Storage
   function init() {
+    loadActiveUser();
     loadSavedState();
     if (state.shuffledQuestions.length === 0) {
       state.shuffledQuestions = shuffleArray([...questionsData]);
@@ -127,6 +139,53 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTrophies();
     setupEventListeners();
     startTimer();
+
+    if (!state.userEmail) {
+      openLoginModal(false);
+    } else {
+      state.timerRunning = true;
+      updateTimerUI();
+    }
+  }
+
+  function loadActiveUser() {
+    try {
+      const u = JSON.parse(localStorage.getItem("simulamax_pcma_active_user") || "null");
+      if (u && u.email) {
+        state.userEmail = u.email;
+        state.userName = u.name || "";
+      }
+    } catch (e) {
+      console.error("Error loading active user:", e);
+    }
+    updateUserUI();
+  }
+
+  function updateUserUI() {
+    if (!el.userEmailLabel) return;
+    if (state.userEmail) {
+      const display = state.userName ? state.userName.split(" ")[0] : state.userEmail.split("@")[0];
+      el.userEmailLabel.textContent = display;
+      el.btnUserAccount.title = `Logado como: ${state.userEmail} (clique para trocar ou sair)`;
+    } else {
+      el.userEmailLabel.textContent = "Entrar";
+      el.btnUserAccount.title = "Clique para entrar com seu e-mail";
+    }
+  }
+
+  function getStateStorageKey() {
+    const suffix = state.userEmail ? state.userEmail.toLowerCase().trim() : "guest";
+    return `simulamax_pcma_state_v3_pdf500_${suffix}`;
+  }
+
+  function openLoginModal(allowClose = true) {
+    if (!el.loginModal) return;
+    if (el.loginEmail) el.loginEmail.value = state.userEmail || "";
+    if (el.loginName) el.loginName.value = state.userName || "";
+    if (el.loginError) el.loginError.style.display = "none";
+    if (el.closeLoginModal) el.closeLoginModal.style.display = allowClose ? "block" : "none";
+    if (el.btnLogout) el.btnLogout.style.display = state.userEmail ? "inline-flex" : "none";
+    el.loginModal.classList.add("active");
   }
 
   function formatTimer(totalSec) {
@@ -155,8 +214,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
+  function resetInMemoryProgress() {
+    state.xp = 0;
+    state.streak = 0;
+    state.maxStreak = 0;
+    state.highScorePct = 0;
+    state.elapsedSeconds = 0;
+    state.currentLevel = 1;
+    state.maxUnlockedLevel = 1;
+    state.currentIndexInLevel = 0;
+    state.subjectCorrect = {};
+    state.userAnswers = {};
+    state.shuffledQuestions = shuffleArray([...questionsData]);
+    state.unlockedTrophies = new Set();
+  }
+
   function loadSavedState() {
-    const saved = localStorage.getItem("simulamax_pcma_state_v3_pdf500");
+    resetInMemoryProgress();
+    const saved = localStorage.getItem(getStateStorageKey());
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -197,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
       shuffledQuestionIds: state.shuffledQuestions.map(q => q.id),
       unlockedTrophies: Array.from(state.unlockedTrophies)
     };
-    localStorage.setItem("simulamax_pcma_state_v3_pdf500", JSON.stringify(toSave));
+    localStorage.setItem(getStateStorageKey(), JSON.stringify(toSave));
   }
 
   function updateStatsUI() {
@@ -838,6 +913,63 @@ document.addEventListener("DOMContentLoaded", () => {
         state.elapsedSeconds = 0;
         updateTimerUI();
         saveState();
+      });
+    }
+
+    // Email Login & Logout
+    if (el.btnUserAccount) {
+      el.btnUserAccount.addEventListener("click", () => openLoginModal(Boolean(state.userEmail)));
+    }
+    if (el.closeLoginModal) {
+      el.closeLoginModal.addEventListener("click", () => {
+        if (state.userEmail) el.loginModal.classList.remove("active");
+      });
+    }
+    if (el.loginModal) {
+      el.loginModal.addEventListener("click", (e) => {
+        if (e.target === el.loginModal && state.userEmail) {
+          el.loginModal.classList.remove("active");
+        }
+      });
+    }
+    if (el.loginForm) {
+      el.loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = (el.loginEmail.value || "").trim().toLowerCase();
+        const name = (el.loginName.value || "").trim();
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (!emailValid) {
+          if (el.loginError) el.loginError.style.display = "block";
+          return;
+        }
+        if (el.loginError) el.loginError.style.display = "none";
+
+        state.userEmail = email;
+        state.userName = name;
+        localStorage.setItem("simulamax_pcma_active_user", JSON.stringify({ email, name }));
+        updateUserUI();
+
+        loadSavedState();
+        state.timerRunning = true;
+        updateTimerUI();
+        renderCategories();
+        renderLevelPills();
+        renderQuestion();
+        renderTrophies();
+
+        el.loginModal.classList.remove("active");
+        showToast("📧 Login realizado!", `Bem-vindo(a), ${name || email}! Seu progresso será salvo nesta conta.`, "✅");
+      });
+    }
+    if (el.btnLogout) {
+      el.btnLogout.addEventListener("click", () => {
+        localStorage.removeItem("simulamax_pcma_active_user");
+        state.userEmail = "";
+        state.userName = "";
+        state.timerRunning = false;
+        updateUserUI();
+        updateTimerUI();
+        openLoginModal(false);
       });
     }
 
